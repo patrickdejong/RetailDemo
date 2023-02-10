@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Webshop": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7166",
+      "launchBrowser": false
+    }
+  }
+}

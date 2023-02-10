@@ -1,3 +1,4 @@
+using Azure.Messaging.ServiceBus;
 using Azure.Storage.Blobs;
 using DataLibrary.Events;
 using Microsoft.Azure.WebJobs;
@@ -13,21 +14,26 @@ namespace Billing
     public class BillingFunction
     {
         [FunctionName("OrderPlacedHandler")]
-        [return: ServiceBus("OrderBilledQueue", Connection = "ServiceBusConnectionString")]
-        public async static Task<string> Run(
+        [return: ServiceBus("orders", Connection = "ServiceBusConnectionString")]
+        public async static Task<ServiceBusMessage> Run(
             [ServiceBusTrigger(queueName: "BillingQueue", Connection = "ServiceBusConnectionString")]
-            OrderPlaced message,
+            string message,
             ILogger logger)
         {
-            logger.LogInformation($"Received OrderPlaced, OrderId = {message.OrderId} - Charging credit card...");
+            OrderPlaced orderPlaced = JsonConvert.DeserializeObject<OrderPlaced>(message);
 
-            bool result = await UploadBlobFile(message.OrderId);
+            logger.LogInformation($"Received OrderPlaced, OrderId = {orderPlaced.OrderId} - Charging credit card...");
+
+            bool result = await UploadBlobFile(orderPlaced.OrderId);
             if (result)
             {
                 logger.LogInformation($"Uploading invoice succesful!");
             }
+            OrderBilled order = new OrderBilled() { OrderId = orderPlaced.OrderId};
 
-            return JsonConvert.SerializeObject(message);
+            ServiceBusMessage serviceBusMessage = new ServiceBusMessage(JsonConvert.SerializeObject(order));
+            serviceBusMessage.ApplicationProperties.Add("Type", "OrderBilled");
+            return serviceBusMessage;
         }
 
         public static async Task<bool> UploadBlobFile(string orderId)
