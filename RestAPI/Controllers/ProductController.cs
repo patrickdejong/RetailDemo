@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Azure.Messaging.ServiceBus;
 using DataLibrary.Model;
-using DataLibrary.Commands;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace RestAPI.Controllers {
     [Route("api/[controller]")]
@@ -13,12 +14,6 @@ namespace RestAPI.Controllers {
             new Product() { Name = "Starship", Price = 9999999999, Manufacturer = "SpaceX" },
         };
 
-        private readonly ILogger<ProductController> _logger;
-
-        public ProductController(ILogger<ProductController> logger) {
-            _logger = logger;
-        }
-
         // GET: api/<ProductController>
         [HttpGet]
         public IEnumerable<Product> Get() {
@@ -27,19 +22,45 @@ namespace RestAPI.Controllers {
 
         // POST: api/<ProductController>/order
         [HttpPost("order")]
-        public async Task<IActionResult> OrderProductAsync(string productName) {
+        public async Task OrderProductAsync(string productName) {
             var product = Products.FirstOrDefault(x => x.Name == productName);
             if (product is null) {
-                return NotFound();
+                throw new ArgumentException("Dit product bestaat niet");
             }
 
-            var command = new PlaceOrder
+            // Create serialised ServiceBusMessage object
+            OrderInfo orderInfo = new OrderInfo
             {
                 OrderId = Guid.NewGuid().ToString(),
                 Product = product,
+                Buyer = "Patrick"
             };
+            var serialisedOrder = JsonConvert.SerializeObject(orderInfo);
+            ServiceBusMessage serviceBusMessage = new ServiceBusMessage(serialisedOrder);
+            serviceBusMessage.ApplicationProperties.Add("Type", "PlaceOrder");
 
-            return Ok();
+            // Setup ServiceBus communication
+            ServiceBusClient client;
+            ServiceBusSender sender;
+            var configuration = new ConfigurationBuilder().AddJsonFile($"appsettings.json");
+            var config = configuration.Build();
+            var connectionString = config.GetConnectionString("ServiceBusConnectionString");
+            client = new ServiceBusClient(connectionString);
+            sender = client.CreateSender("orders");
+
+            // Create a batch and send message
+            using ServiceBusMessageBatch messageBatch = await sender.CreateMessageBatchAsync();
+            messageBatch.TryAddMessage(serviceBusMessage);
+
+            try {
+                await sender.SendMessagesAsync(messageBatch);
+            }
+            finally {
+                // Calling DisposeAsync on client types is required to ensure that network
+                // resources and other unmanaged objects are properly cleaned up.
+                await sender.DisposeAsync();
+                await client.DisposeAsync();
+            }
         }
     }
 }
