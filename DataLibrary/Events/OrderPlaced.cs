@@ -1,7 +1,6 @@
 ﻿namespace DataLibrary.Events
 {
-    public class OrderPlaced
-    {
+    public class OrderPlaced : IOrder {
         public string OrderId { get; set; }
     }
 }

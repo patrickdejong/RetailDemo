@@ -1,52 +1,92 @@
 using Azure.Messaging.ServiceBus;
+using DataLibrary.Enum;
 using DataLibrary.Events;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Shipping {
     public class ShippingFunction {
         [FunctionName("ShippingFunction")]
-        //[return: ServiceBus("Orders", Connection = "ServiceBusConnectionString")]
-        public static async Task Run(
-            [ServiceBusTrigger("OrderBilledQueue", Connection = "ServiceBusConnectionString")] ServiceBusMessage message,
+        [return: ServiceBus("Orders", Connection = "ServiceBusConnectionString")]
+        public static async Task<ServiceBusMessage> Run(
+            [ServiceBusTrigger("OrderBilledQueue", Connection = "ServiceBusConnectionString")] ServiceBusReceivedMessage message,
             ILogger log) {
             log.LogInformation($"C# ServiceBus queue trigger function processed message: {message}");
 
-            
+            var order = JsonConvert.DeserializeObject(Encoding.UTF8.GetString(message.Body));
 
-            foreach (var prop in message.ApplicationProperties) {
-                log.LogInformation($": {prop.Key}: {prop.Value}");
+            //Type ophalen
+            switch (message.ApplicationProperties.FirstOrDefault(m => m.Key == "Type").Value) { 
+                case "OrderPlaced":
+                    OrderPlaced orderPlaced = JsonConvert.DeserializeObject<OrderPlaced>(Encoding.UTF8.GetString(message.Body));
+                    OrderEntity orderEntity = new OrderEntity(orderPlaced.OrderId) {
+                        isOrderPlaced = true
+                    };
+                    return await UpdateOrderInStorage(orderEntity, orderPlaced.OrderId, Operation.OrderPlaced);
+                case "OrderBilled":
+                    OrderBilled orderBilled = JsonConvert.DeserializeObject<OrderBilled>(Encoding.UTF8.GetString(message.Body));
+                    OrderEntity orderEntity2 = new OrderEntity(orderBilled.OrderId)
+                    {
+                        isOrderBilled = true
+                    };
+                    return await UpdateOrderInStorage(orderEntity2, orderBilled.OrderId, Operation.OrderBilled);
+                default:
+                    break;
             }
+            return null;
+        }
 
+        public async static Task<ServiceBusMessage> UpdateOrderInStorage(OrderEntity orderEntity, string orderId, Operation operation) {
+            //Settings
+            var storageAccount = CloudStorageAccount.Parse(Environment.GetEnvironmentVariable("StorageAccount"));
+            var tableClient = storageAccount.CreateCloudTableClient();
+            var table = tableClient.GetTableReference("ordertable");
+            await table.CreateIfNotExistsAsync();
 
+            // Insert or Update storage
+            try {
+                // Get rows
+                TableQuery<OrderEntity> retrieveOperation = new TableQuery<OrderEntity>()
+                    .Where(TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.Equal, orderId));
+                var orderList = await table.ExecuteQuerySegmentedAsync(retrieveOperation, null);
+                OrderEntity foundInTable = orderList.FirstOrDefault();//(o => o.RowKey == orderId);
 
+                // Add existing data to entity
+                if (foundInTable != null) {
+                    if (foundInTable != null) {
+                        switch (operation) {
+                            case Operation.OrderPlaced:
+                                orderEntity.isOrderBilled = foundInTable.isOrderBilled;
+                                break;
+                            case Operation.OrderBilled:
+                                orderEntity.isOrderPlaced = foundInTable.isOrderPlaced;
+                                break;
+                        }
+                    }
+                }
+                // Update table
+                await table.ExecuteAsync(TableOperation.InsertOrMerge(orderEntity));
 
+                // If placed and billed, ship order!
+                if(orderEntity.isOrderPlaced && orderEntity.isOrderBilled) {
+                    ServiceBusMessage serviceBusMessage = new ServiceBusMessage(JsonConvert.SerializeObject(orderEntity));
+                    serviceBusMessage.ApplicationProperties.Add("Type", "OrderShipped");
+                    return serviceBusMessage;
+                }
+                return null;
 
-            // Peek incoming 50 messages from the queue
-            /*ServiceBusClient serviceBusClient = new ServiceBusClient(Environment.GetEnvironmentVariable("ServiceBusConnectionString"));
-            var receiver = serviceBusClient.CreateReceiver("OrderBilledQueue");
-            var messagesOfQueue = await receiver.PeekMessagesAsync(50);
-*/
-            // For every message, check if the order inside contains the same OrderId
-            //foreach (var queuedMessage in messagesOfQueue) {
-            //    // TODO: Message should not check itself
-            //    // Is er een manier om Message ID's bij te houden?
-
-            //    log.LogInformation($"Incoming message body: {queuedMessage.Body}");
-
-            //    var data = (JObject)JsonConvert.DeserializeObject(queuedMessage.Body.ToString());
-            //    var orderId = data.SelectToken("OrderId").Value<string>();
-
-            //    // When the message's incoming orderId equals the OrderId, we know it's been activated by Sales & Billing
-            //    if (orderId == message.OrderId) {
-            //        log.LogWarning($"Dit is het ");
-            //    }
-            //}
+            }
+            catch (Exception e) {
+                Console.WriteLine($"\n!!! Something went wrong in table operation. ({e})!!!");
+                return null;
+            }
         }
     }
 }

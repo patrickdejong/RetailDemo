@@ -21,12 +21,11 @@ namespace RetailServiceBusDemo
 
             OrderPlaced orderPlaced = new()
             {
-                OrderId = order.OrderId
+                OrderId = Guid.NewGuid().ToString()
             };
 
             ServiceBusMessage message = new ServiceBusMessage(JsonConvert.SerializeObject(orderPlaced));
             message.ApplicationProperties.Add("Type","OrderPlaced");
-            message.MessageId = Guid.NewGuid().ToString();
             message.Body = new BinaryData(JsonConvert.SerializeObject(orderPlaced));
             return message;
         }
