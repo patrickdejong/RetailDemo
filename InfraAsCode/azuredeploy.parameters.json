@@ -1,0 +1,48 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "serviceBusNamespaceName": {
+      "value": "armpatrickbus"
+    },
+    "salesQueueName": {
+      "value": "salesqueue"
+    },
+    "billingQueueName": {
+      "value": "billingqueue"
+    },
+    "shippingQueueName": {
+      "value": "shippingqueue"
+    },
+    "topicName": {
+      "value": "orders"
+    },
+    "salesSubscription": {
+      "value": "sales"
+    },
+    "billingSubscription": {
+      "value": "billing"
+    },
+    "shippingSubscription": {
+      "value": "shipping"
+    },
+    "isOrderPlaced": {
+      "value": "isOrderPlaced"
+    },
+    "isOrderBilled": {
+      "value": "isOrderBilled"
+    },
+    "isPlaceOrder": {
+      "value": "isPlaceOrder"
+    },
+    "functionAppSales": {
+      "value": "SalesFunction15022023"
+    },
+    "hostingPlanName": {
+      "value": "PatrickBusHostingPlan"
+    },
+    "storageName": {
+      "value": "storage13022023"
+    }
+  }
+}

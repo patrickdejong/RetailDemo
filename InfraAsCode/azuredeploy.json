@@ -1,0 +1,333 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "serviceBusNamespaceName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Service Bus namespace"
+      }
+    },
+    "hostingPlanName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Hosting Plan"
+      }
+    },
+    "storageName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Storage Account"
+      }
+    },
+    "topicName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the topic"
+      }
+    },
+    "salesQueueName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Sales Queue"
+      }
+    },
+    "billingQueueName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Billing Queue"
+      }
+    },
+    "shippingQueueName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Shipping Queue"
+      }
+    },
+    "salesSubscription": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the sales Subscription"
+      }
+    },
+    "billingSubscription": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Billing Subscription"
+      }
+    },
+    "shippingSubscription": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Shipping Subscription"
+      }
+    },
+    "isPlaceOrder": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Rule: isPlaceOrder"
+      }
+    },
+    "isOrderPlaced": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Rule: isOrderPlaced"
+      }
+    },
+    "isOrderBilled": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Rule: isOrderBiled"
+      }
+    },
+    "functionAppSales": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Sales Function App"
+      }
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2019-06-01",
+      "name": "[parameters('storageName')]",
+      "location": "West Europe",
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "kind": "StorageV2"
+    },
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2018-02-01",
+      "name": "[parameters('hostingPlanName')]",
+      "location": "West Europe",
+      "sku": {
+        "name": "Y1",
+        "tier": "Dynamic"
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces",
+      "apiVersion": "2017-04-01",
+      "name": "[parameters('serviceBusNamespaceName')]",
+      "location": "West Europe",
+      "sku": {
+        "name": "Standard",
+        "tier": "Standard"
+      },
+      "properties": {
+        "alternateName": "PatrickBus",
+        "disableLocalAuth": "false",
+        "encryption": {
+          "keySource": "Microsoft.KeyVault",
+          "keyVaultProperties": [
+            {
+              "identity": {
+                "userAssignedIdentity": "string"
+              },
+              "keyName": "string",
+              "keyVaultUri": "string",
+              "keyVersion": "string"
+            }
+          ],
+          "requireInfrastructureEncryption": "bool"
+        },
+        "minimumTlsVersion": "TLS1_2"
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/queues",
+      "apiVersion": "2017-04-01",
+      "name": "[format('{0}/{1}', parameters('serviceBusNamespaceName'), parameters('salesQueueName'))]",
+      "properties": {
+        "lockDuration": "PT5M",
+        "maxSizeInMegabytes": 1024,
+        "requiresDuplicateDetection": false,
+        "requiresSession": false,
+        "defaultMessageTimeToLive": "P10675199DT2H48M5.4775807S",
+        "deadLetteringOnMessageExpiration": false,
+        "duplicateDetectionHistoryTimeWindow": "PT10M",
+        "maxDeliveryCount": 10,
+        "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S",
+        "enablePartitioning": false,
+        "enableExpress": false
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('serviceBusNamespaceName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/queues",
+      "apiVersion": "2017-04-01",
+      "name": "[format('{0}/{1}', parameters('serviceBusNamespaceName'), parameters('billingQueueName'))]",
+      "properties": {
+        "lockDuration": "PT5M",
+        "maxSizeInMegabytes": 1024,
+        "requiresDuplicateDetection": false,
+        "requiresSession": false,
+        "defaultMessageTimeToLive": "P10675199DT2H48M5.4775807S",
+        "deadLetteringOnMessageExpiration": false,
+        "duplicateDetectionHistoryTimeWindow": "PT10M",
+        "maxDeliveryCount": 10,
+        "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S",
+        "enablePartitioning": false,
+        "enableExpress": false
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('serviceBusNamespaceName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/queues",
+      "apiVersion": "2017-04-01",
+      "name": "[format('{0}/{1}', parameters('serviceBusNamespaceName'), parameters('shippingQueueName'))]",
+      "properties": {
+        "lockDuration": "PT5M",
+        "maxSizeInMegabytes": 1024,
+        "requiresDuplicateDetection": false,
+        "requiresSession": false,
+        "defaultMessageTimeToLive": "P10675199DT2H48M5.4775807S",
+        "deadLetteringOnMessageExpiration": false,
+        "duplicateDetectionHistoryTimeWindow": "PT10M",
+        "maxDeliveryCount": 10,
+        "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S",
+        "enablePartitioning": false,
+        "enableExpress": false
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('serviceBusNamespaceName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics",
+      "apiVersion": "2017-04-01",
+      "name": "[format('{0}/{1}', parameters('serviceBusNamespaceName'), parameters('topicName'))]",
+      "properties": {
+        "maxMessageSizeInKilobytes": 1024,
+        "maxSizeInMegabytes": 1024,
+        "status": "Active",
+        "supportOrdering": true
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('serviceBusNamespaceName'))]"
+      ]
+
+    },
+    {
+      "apiVersion": "2017-04-01",
+      "name": "[format('{0}/{1}/{2}', parameters('serviceBusNamespaceName'), parameters('topicName'), parameters('salesSubscription'))]",
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+      "dependsOn": [ "[parameters('topicName')]" ],
+      "properties": {
+        "lockDuration": "PT1M",
+        "requiresSession": false,
+        "defaultMessageTimeToLive": "P10675199DT2H48M5.4775807S",
+        "deadLetteringOnMessageExpiration": false,
+        "maxDeliveryCount": 10,
+        "enableBatchedOperations": false,
+        "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S",
+        "forwardTo": "[parameters('salesQueueName')]"
+      }
+    },
+    {
+      "apiVersion": "2017-04-01",
+      "name": "[format('{0}/{1}/{2}/{3}', parameters('serviceBusNamespaceName'), parameters('topicName'), parameters('salesSubscription'), parameters('isPlaceOrder'))]",
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "dependsOn": [
+        "[parameters('salesSubscription')]"
+      ],
+      "properties": {
+        "filterType": "SqlFilter",
+        "sqlFilter": {
+          "sqlExpression": "Type LIKE '%PlaceOrder%'",
+          "requiresPreprocessing": false
+        }
+      }
+    },
+    {
+      "apiVersion": "2017-04-01",
+      "name": "[format('{0}/{1}/{2}', parameters('serviceBusNamespaceName'), parameters('topicName'), parameters('billingSubscription'))]",
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+      "dependsOn": [ "[parameters('topicName')]" ],
+      "properties": {
+        "lockDuration": "PT1M",
+        "requiresSession": false,
+        "defaultMessageTimeToLive": "P10675199DT2H48M5.4775807S",
+        "deadLetteringOnMessageExpiration": false,
+        "maxDeliveryCount": 10,
+        "enableBatchedOperations": false,
+        "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S",
+        "forwardTo": "[parameters('billingQueueName')]"
+      }
+    },
+    {
+      "apiVersion": "2017-04-01",
+      "name": "[format('{0}/{1}/{2}/{3}', parameters('serviceBusNamespaceName'), parameters('topicName'), parameters('billingSubscription'), parameters('isOrderPlaced'))]",
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "dependsOn": [
+        "[parameters('billingSubscription')]"
+      ],
+      "properties": {
+        "filterType": "SqlFilter",
+        "sqlFilter": {
+          "sqlExpression": "Type LIKE '%OrderPlaced%'",
+          "requiresPreprocessing": false
+        }
+      }
+    },
+    {
+      "apiVersion": "2017-04-01",
+      "name": "[format('{0}/{1}/{2}', parameters('serviceBusNamespaceName'), parameters('topicName'), parameters('shippingSubscription'))]",
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+      "dependsOn": [ "[parameters('topicName')]" ],
+      "properties": {
+        "lockDuration": "PT1M",
+        "requiresSession": false,
+        "defaultMessageTimeToLive": "P10675199DT2H48M5.4775807S",
+        "deadLetteringOnMessageExpiration": false,
+        "maxDeliveryCount": 10,
+        "enableBatchedOperations": false,
+        "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S",
+        "forwardTo": "[parameters('shippingQueueName')]"
+      }
+    },
+    {
+      "apiVersion": "2017-04-01",
+      "dependsOn": [
+        "[parameters('shippingSubscription')]"
+      ],
+      "name": "[format('{0}/{1}/{2}/{3}', parameters('serviceBusNamespaceName'), parameters('topicName'), parameters('shippingSubscription'), parameters('isOrderBilled'))]",
+      "properties": {
+        "filterType": "SqlFilter",
+        "sqlFilter": {
+          "sqlExpression": "Type LIKE '%OrderBilled%'",
+          "requiresPreprocessing": false
+        }
+      },
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules"
+    },
+    {
+      "apiVersion": "2017-04-01",
+      "dependsOn": [
+        "[parameters('shippingSubscription')]"
+      ],
+      "name": "[format('{0}/{1}/{2}/{3}', parameters('serviceBusNamespaceName'), parameters('topicName'), parameters('shippingSubscription'), parameters('isPlaceOrder'))]",
+      "properties": {
+        "filterType": "SqlFilter",
+        "sqlFilter": {
+          "sqlExpression": "Type LIKE '%PlaceOrder%'",
+          "requiresPreprocessing": false
+        }
+      },
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules"
+    }
+  ],
+  "outputs": {},
+  "metadata": {
+    "comments": "This template was developed for educational purposes. ",
+    "author": "Patrick de Jong"
+  }
+}
