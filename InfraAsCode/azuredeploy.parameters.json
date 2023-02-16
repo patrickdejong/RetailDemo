@@ -43,6 +43,18 @@
     },
     "storageName": {
       "value": "storage13022023"
+    },
+    "functionAppBilling": {
+      "value": "BillingFunction16022023"
+    },
+    "functionAppShipping": {
+      "value": "ShippingFunction16022023"
+    },
+    "applicationInsightsName": {
+      "value": "ApplicationInsights"
+    },
+    "env": {
+      "value": "d"
     }
   }
 }

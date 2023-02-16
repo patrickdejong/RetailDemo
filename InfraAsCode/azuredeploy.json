@@ -85,6 +85,30 @@
       "metadata": {
         "description": "Name of the Sales Function App"
       }
+    },
+    "functionAppBilling": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Sales Function App"
+      }
+    },
+    "functionAppShipping": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Sales Function App"
+      }
+    },
+    "applicationInsightsName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Application Insights"
+      }
+    },
+    "env": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the environment"
+      }
     }
   },
   "variables": {},
@@ -318,7 +342,9 @@
       "apiVersion": "2021-02-01",
       "name": "[parameters('hostingPlanName')]",
       "location": "West Europe",
-      "properties": {},
+      "properties": {
+        "reserved": false
+      },
       "sku": {
         "name": "Y1",
         "tier": "Dynamic"
@@ -332,8 +358,8 @@
       "kind": "functionapp",
       "dependsOn": [
         "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]",
-        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageName'))]",
-        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('serviceBusNamespaceName'))]"
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageName'))]"
+      //  "[resourceId('Microsoft.ServiceBus/namespaces', parameters('serviceBusNamespaceName'))]"
       ],
       "properties": {
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]",
@@ -349,14 +375,25 @@
             },
             {
               "name": "FUNCTIONS_WORKER_RUNTIME",
-              "value": "node"
+              "value": "dotnet"
             },
             {
-              "name": "WEBSITE_NODE_DEFAULT_VERSION",
-              "value": "~14"
+              "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+              "value": "[reference(resourceId('Microsoft.Insights/components', parameters('applicationInsightsName')), '2020-02-02').InstrumentationKey]"
             }
           ]
         }
+      }
+    },
+    {
+      "type": "Microsoft.Insights/components",
+      "apiVersion": "2020-02-02",
+      "name": "[parameters('applicationInsightsName')]",
+      "location": "West Europe",
+      "kind": "web",
+      "properties": {
+        "Application_Type": "web",
+        "Request_Source": "rest"
       }
     }
   ],
