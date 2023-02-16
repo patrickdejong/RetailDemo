@@ -1,5 +1,5 @@
 {
-  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
     "serviceBusNamespaceName": {
@@ -98,16 +98,6 @@
         "name": "Standard_LRS"
       },
       "kind": "StorageV2"
-    },
-    {
-      "type": "Microsoft.Web/serverfarms",
-      "apiVersion": "2018-02-01",
-      "name": "[parameters('hostingPlanName')]",
-      "location": "West Europe",
-      "sku": {
-        "name": "Y1",
-        "tier": "Dynamic"
-      }
     },
     {
       "type": "Microsoft.ServiceBus/namespaces",
@@ -323,6 +313,17 @@
         }
       },
       "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules"
+    },
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2021-02-01",
+      "name": "[parameters('hostingPlanName')]",
+      "location": "West Europe",
+      "properties": {},
+      "sku": {
+        "name": "Y1",
+        "tier": "Dynamic"
+      }
     }
   ],
   "outputs": {},
