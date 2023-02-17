@@ -363,6 +363,12 @@
       "properties": {
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]",
         "siteConfig": {
+          "connectionStrings": [
+            {
+              "name": "ServiceBusConnectionString",
+              "connectionString": "[listKeys(resourceId('Microsoft.ServiceBus/namespaces/authorizationRules', parameters('serviceBusNamespaceName'), 'RootManageSharedAccessKey'), '2017-04-01').primaryConnectionString]"
+            }
+          ],
           "appSettings": [
             {
               "name": "AzureWebJobsStorage",
