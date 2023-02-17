@@ -10,7 +10,7 @@ namespace RetailServiceBusDemo {
     public class SalesFunction {
         [FunctionName("SalesFunction")]
         [return: ServiceBus("Orders", Connection = "ServiceBusConnectionString")]
-        public static ServiceBusMessage Run([ServiceBusTrigger("SalesQueue", Connection = "ServiceBusConnectionString")] string myQueueItem, ILogger log) {
+        public static ServiceBusMessage Run([ServiceBusTrigger("salesqueue", Connection = "ServiceBusConnectionString")] string myQueueItem, ILogger log) {
             log.LogInformation($"C# ServiceBus queue trigger function processed message: {myQueueItem}");
             PlaceOrder order = JsonConvert.DeserializeObject<PlaceOrder>(myQueueItem);
 

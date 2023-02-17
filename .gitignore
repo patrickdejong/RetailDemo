@@ -361,3 +361,9 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/RetailServiceBusDemo/Properties/ServiceDependencies/SalesFunction15022023 - Zip Deploy/profile.arm.json
+/RetailServiceBusDemo/Properties/ServiceDependencies/SalesFunction15022023 - Zip Deploy/storage1.arm.json
+/RetailServiceBusDemo/Properties/ServiceDependencies/SalesFunction15022023 - Zip Deploy1/storage1.arm.json
+/RetailServiceBusDemo/Properties/ServiceDependencies/SalesFunction15022023 - Zip Deploy1/profile.arm.json
+/RetailServiceBusDemo/Properties/ServiceDependencies/SalesFunction15022023 - Zip Deploy1/profile.arm.json
+/RetailServiceBusDemo/Properties/ServiceDependencies/SalesFunction15022023 - Zip Deploy/profile.arm.json
