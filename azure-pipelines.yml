@@ -44,5 +44,5 @@ steps:
     azureSubscription: 'Visual Studio Enterprise-abonnement – MPN(ff29f8c3-ba94-4171-b102-02a5256b1419)'
     appType: 'webApp'
     appName: 'RestApi17022023'
-    package: '$(System.DefaultWorkingDirectory)/**/*.zip'
+    package: '**/RestAPI/**/*.zip'
     deploymentMethod: 'auto'
