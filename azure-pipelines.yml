@@ -35,4 +35,7 @@ steps:
     location: 'West Europe'
     templateLocation: 'Linked artifact'
     csmFile: '**/*/azuredeploy.json'
+    csmParametersFile: '**/*/azuredeploy.parameters.json'
     deploymentMode: 'Incremental'
+
+
