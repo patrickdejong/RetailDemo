@@ -18,7 +18,21 @@ steps:
     echo See https://aka.ms/yaml
   displayName: 'Run a multi-line script'
 
+# Build projects
 - task: DotNetCoreCLI@2
   inputs:
     command: 'build'
     projects: '**/*.csproj'
+
+# Deploy using ARM
+- task: AzureResourceManagerTemplateDeployment@3
+  inputs:
+    deploymentScope: 'Resource Group'
+    azureResourceManagerConnection: 'Visual Studio Enterprise-abonnement – MPN(ff29f8c3-ba94-4171-b102-02a5256b1419)'
+    subscriptionId: 'ff29f8c3-ba94-4171-b102-02a5256b1419'
+    action: 'Create Or Update Resource Group'
+    resourceGroupName: 'ArmResourceGroup'
+    location: 'West Europe'
+    templateLocation: 'Linked artifact'
+    csmFile: '**\azuredeploy.json'
+    deploymentMode: 'Incremental'
