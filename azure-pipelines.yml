@@ -24,7 +24,7 @@ steps:
     command: 'build'
     projects: '**/*.csproj'
 
-# Deploy using ARM
+# Deploy Azure services using ARM
 - task: AzureResourceManagerTemplateDeployment@3
   inputs:
     deploymentScope: 'Resource Group'
@@ -38,4 +38,11 @@ steps:
     csmParametersFile: '**/*/azuredeploy.parameters.json'
     deploymentMode: 'Incremental'
 
-
+# Publish apps to Azure services
+- task: AzureWebApp@1
+  inputs:
+    azureSubscription: 'Visual Studio Enterprise-abonnement – MPN(ff29f8c3-ba94-4171-b102-02a5256b1419)'
+    appType: 'webApp'
+    appName: 'RestApi17022023'
+    package: '$(System.DefaultWorkingDirectory)/**/*.zip'
+    deploymentMethod: 'auto'
