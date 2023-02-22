@@ -22,7 +22,10 @@ stages:
       inputs:
         command: 'publish'
         publishWebProjects: true
-        
+    - task: PublishBuildArtifacts@1
+      inputs: 
+        pathtoPublish: $(Build.ArtifactStagingDirectory) # dist or build files
+        ArtifactName: 'projectZips'
 
 - stage: Development
   jobs:
