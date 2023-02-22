@@ -18,6 +18,9 @@ stages:
       inputs:
         command: 'build'
         projects: '**/*.csproj'
+    - task: CopyFiles@2
+      inputs:
+        targetFolder: '$(Build.ArtifactStagingDirectory)'
     - task: PublishBuildArtifacts@1
       inputs:
         pathToPublish: '$(Build.ArtifactStagingDirectory)'
