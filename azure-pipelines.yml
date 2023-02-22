@@ -20,16 +20,18 @@ stages:
       inputs:
         command: 'build'
         projects: '**/*.csproj'
-    # - task: DotNetCoreCLI@2
-    #   displayName: 'dotnet publish'
-    #   inputs:
-    #     command: 'publish'
-    #     publishWebProjects: true
-    #     zipAfterPublish: true
+    
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'publish'
+        publishWebProjects: false
+        projects: '**/Billing.csproj'
+        arguments: '--output $(System.DefaultWorkingDirectory)/artifacts'
+    - task: PublishPipelineArtifact@1
+      inputs:
+        targetPath: $(System.DefaultWorkingDirectory)/artifacts/Billing.zip
+        artifactName: Billing
 
-    - script: dotnet publish --configuration Release --output .\bin\publish
-    - script: Compress-Archive .\bin\publish\* .\bin\app.zip
-    - script: z webapp deployment source config-zip --src .\bin\app.zip
 
 - stage: Development
   jobs:
