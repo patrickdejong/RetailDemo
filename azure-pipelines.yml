@@ -25,13 +25,14 @@ stages:
       inputs:
         command: 'publish'
         publishWebProjects: false
-        projects: '**/Billing.csproj'
-        arguments: '--output $(System.DefaultWorkingDirectory)/artifacts'
-    - task: PublishPipelineArtifact@1
+        projects: '**/*.csproj'
+        arguments: '--output $(Build.ArtifactStagingDirectory)'
+      
+    - task: PublishBuildArtifacts@1
       inputs:
-        targetPath: $(System.DefaultWorkingDirectory)/artifacts/Billing.zip
-        artifactName: Billing
-
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
 
 - stage: Development
   jobs:
