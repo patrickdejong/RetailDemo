@@ -18,16 +18,6 @@ stages:
       inputs:
         command: 'build'
         projects: '**/*.csproj'
-    - task: ArchiveFiles@2
-      inputs:
-        rootFolderOrFile: '$(System.DefaultWorkingDirectory)/build' 
-        includeRootFolder: false 
-        archiveType: 'zip'
-        archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
-    - task: PublishBuildArtifacts@1
-      inputs:
-        pathToPublish: '$(Build.ArtifactStagingDirectory)'
-        artifactName: buildArtifact
 
 - stage: Development
   jobs:
