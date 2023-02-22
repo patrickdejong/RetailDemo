@@ -22,13 +22,10 @@ stages:
       inputs:
         command: 'publish'
         publishWebProjects: true
-    - task: CopyFiles@2
+    - task: PublishPipelineArtifact@1
       inputs:
-        targetFolder: '$(Build.ArtifactStagingDirectory)'
-    - task: PublishBuildArtifacts@1
-      inputs: 
-        pathtoPublish: $(Build.ArtifactStagingDirectory) # dist or build files
-        ArtifactName: 'projectZips'
+        targetPath: $(System.DefaultWorkingDirectory)/bin/WebApp
+        artifactName: WebApp
 
 - stage: Development
   jobs:
