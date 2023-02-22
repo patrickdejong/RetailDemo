@@ -11,18 +11,29 @@ stages:
   - job: BuildAllProjects
     steps:
     - task: DotNetCoreCLI@2
+      displayName: 'dotnet restore'
       inputs:
         command: 'restore'
         projects: '**/*.csproj'
     - task: DotNetCoreCLI@2
+      displayName: 'dotnet build'
       inputs:
         command: 'build'
         projects: '**/*.csproj'
     - task: DotNetCoreCLI@2
+      displayName: 'dotnet publish'
       inputs:
         command: 'publish'
         publishWebProjects: true
         zipAfterPublish: true
+
+    - task: ArchiveFiles@2
+      inputs:
+        rootFolderOrFile: '$(Build.BinariesDirectory)'
+        includeRootFolder: true
+        archiveType: 'zip'
+        archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+        replaceExistingArchive: true
 
 - stage: Development
   jobs:
