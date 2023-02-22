@@ -27,7 +27,11 @@ stages:
         publishWebProjects: false
         projects: '**/*.csproj'
         arguments: '--output $(Build.ArtifactStagingDirectory)'
-      
+    - task: CopyFiles@2
+      inputs:
+        SourceFolder: 'InfraAsCode'
+        Contents: '*.json'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)/arm'
     - task: PublishBuildArtifacts@1
       inputs:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)'
@@ -38,6 +42,7 @@ stages:
   jobs:
     - job: DeployUsingArmTemplate
       steps:
+      - checkout: none
       - task: AzureResourceManagerTemplateDeployment@3
         inputs:
           deploymentScope: 'Resource Group'
@@ -47,13 +52,13 @@ stages:
           resourceGroupName: 'ArmResourceGroup'
           location: 'West Europe'
           templateLocation: 'Linked artifact'
-          csmFile: '**/*/azuredeploy.json'
-          csmParametersFile: '**/*/azuredeploy.parameters.json'
+          csmFile: '$(System.ArtifactsDirectory)/drop/arm/azuredeploy.json'
+          csmParametersFile: '$(System.ArtifactsDirectory)/drop/arm/azuredeploy.parameters.json'
           deploymentMode: 'Incremental'
       - task: AzureWebApp@1
         inputs:
           azureSubscription: 'Visual Studio Enterprise-abonnement – MPN(ff29f8c3-ba94-4171-b102-02a5256b1419)'
           appType: 'webApp'
           appName: 'RestApi17022023'
-          package: '$(System.ArtifactStagingDirectory)/RestAPI.zip'
+          package: '$(System.ArtifactsDirectory)/drop/RestAPI.zip'
           deploymentMethod: 'auto'
