@@ -18,6 +18,10 @@ stages:
       inputs:
         command: 'build'
         projects: '**/*.csproj'
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathToPublish: '$(Build.ArtifactStagingDirectory)'
+        artifactName: buildArtifact
 
 - stage: Development
   jobs:
