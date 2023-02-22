@@ -20,20 +20,16 @@ stages:
       inputs:
         command: 'build'
         projects: '**/*.csproj'
-    - task: DotNetCoreCLI@2
-      displayName: 'dotnet publish'
-      inputs:
-        command: 'publish'
-        publishWebProjects: true
-        zipAfterPublish: true
+    # - task: DotNetCoreCLI@2
+    #   displayName: 'dotnet publish'
+    #   inputs:
+    #     command: 'publish'
+    #     publishWebProjects: true
+    #     zipAfterPublish: true
 
-    - task: ArchiveFiles@2
-      inputs:
-        rootFolderOrFile: '$(Build.BinariesDirectory)'
-        includeRootFolder: true
-        archiveType: 'zip'
-        archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
-        replaceExistingArchive: true
+    - script: dotnet publish --configuration Release --output .\bin\publish
+    - script: Compress-Archive .\bin\publish\* .\bin\app.zip
+    - script: z webapp deployment source config-zip --src .\bin\app.zip
 
 - stage: Development
   jobs:
