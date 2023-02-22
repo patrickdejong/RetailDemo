@@ -1,48 +1,47 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
 - master
 
 pool:
   vmImage: ubuntu-latest
 
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
-
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
-
 # Build projects
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'build'
-    projects: '**/*.csproj'
+stages:
+- stage: Build
+  jobs:
+  - job: BuildAllProjects
+    steps:
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'restore'
+        projects: '**/*.csproj'
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'build'
+        projects: '**/*.csproj'
 
-# Deploy Azure services using ARM
-- task: AzureResourceManagerTemplateDeployment@3
-  inputs:
-    deploymentScope: 'Resource Group'
-    azureResourceManagerConnection: 'Visual Studio Enterprise-abonnement – MPN(ff29f8c3-ba94-4171-b102-02a5256b1419)'
-    subscriptionId: 'ff29f8c3-ba94-4171-b102-02a5256b1419'
-    action: 'Create Or Update Resource Group'
-    resourceGroupName: 'ArmResourceGroup'
-    location: 'West Europe'
-    templateLocation: 'Linked artifact'
-    csmFile: '**/*/azuredeploy.json'
-    csmParametersFile: '**/*/azuredeploy.parameters.json'
-    deploymentMode: 'Incremental'
+- stage: Development
+  jobs:
+    - job: DeployUsingArmTemplate
+      steps:
+      - task: AzureResourceManagerTemplateDeployment@3
+        inputs:
+          deploymentScope: 'Resource Group'
+          azureResourceManagerConnection: 'Visual Studio Enterprise-abonnement – MPN(ff29f8c3-ba94-4171-b102-02a5256b1419)'
+          subscriptionId: 'ff29f8c3-ba94-4171-b102-02a5256b1419'
+          action: 'Create Or Update Resource Group'
+          resourceGroupName: 'ArmResourceGroup'
+          location: 'West Europe'
+          templateLocation: 'Linked artifact'
+          csmFile: '**/*/azuredeploy.json'
+          csmParametersFile: '**/*/azuredeploy.parameters.json'
+          deploymentMode: 'Incremental'
 
-# Publish apps to Azure services
-- task: AzureWebApp@1
-  inputs:
-    azureSubscription: 'Visual Studio Enterprise-abonnement – MPN(ff29f8c3-ba94-4171-b102-02a5256b1419)'
-    appType: 'webApp'
-    appName: 'RestApi17022023'
-    package: '**/RestAPI/**/*.zip'
-    deploymentMethod: 'auto'
+    - job: DeployRestApi
+      steps:
+      - task: AzureWebApp@1
+        inputs:
+          azureSubscription: 'Visual Studio Enterprise-abonnement – MPN(ff29f8c3-ba94-4171-b102-02a5256b1419)'
+          appType: 'webApp'
+          appName: 'RestApi17022023'
+          package: '**/RestAPI/**/*.zip'
+          deploymentMethod: 'auto'
