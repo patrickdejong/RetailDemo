@@ -22,10 +22,7 @@ stages:
       inputs:
         command: 'publish'
         publishWebProjects: true
-    - task: PublishPipelineArtifact@1
-      inputs:
-        targetPath: $(System.DefaultWorkingDirectory)/bin/WebApp
-        artifactName: WebApp
+        zipAfterPublish: true
 
 - stage: Development
   jobs:
