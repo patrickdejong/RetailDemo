@@ -18,9 +18,12 @@ stages:
       inputs:
         command: 'build'
         projects: '**/*.csproj'
-    - task: CopyFiles@2
+    - task: ArchiveFiles@2
       inputs:
-        targetFolder: '$(Build.ArtifactStagingDirectory)'
+        rootFolderOrFile: '$(System.DefaultWorkingDirectory)/build' 
+        includeRootFolder: false 
+        archiveType: 'zip'
+        archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
     - task: PublishBuildArtifacts@1
       inputs:
         pathToPublish: '$(Build.ArtifactStagingDirectory)'
