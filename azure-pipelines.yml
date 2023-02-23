@@ -51,9 +51,6 @@ stages:
         displayName: 'Download artifact'
         inputs:
           artifact: drop
-      dependsOn: BuildAllProjects
-    - job: DeployARM
-      steps:
       - task: AzureResourceManagerTemplateDeployment@3
         displayName: 'Deploy ARM-template'
         inputs:
@@ -67,11 +64,9 @@ stages:
           csmFile: '$(Pipeline.Workspace)/arm/azuredeploy.json'
           csmParametersFile: '$(Pipeline.Workspace)/arm/azuredeploy.parameters.json'
           deploymentMode: 'Incremental'
-    - job: DeployProjects
-      steps:
-        - task: AzureWebApp@1
-          displayName: 'Deploy Rest Api'
-          inputs:
+      - task: AzureWebApp@1
+        displayName: 'Deploy Rest Api'
+        inputs:
             azureSubscription: 'Visual Studio Enterprise-abonnement – MPN(ff29f8c3-ba94-4171-b102-02a5256b1419)'
             appType: 'webApp'
             appName: 'RestApi17022023'
