@@ -44,6 +44,9 @@ stages:
       steps:
       - checkout: none
       # Download artifacts
+      - task: DownloadPipelineArtifact@2
+        inputs:
+          artifact: drop
       - task: AzureResourceManagerTemplateDeployment@3
         inputs:
           deploymentScope: 'Resource Group'
@@ -53,13 +56,13 @@ stages:
           resourceGroupName: 'ArmResourceGroup'
           location: 'West Europe'
           templateLocation: 'Linked artifact'
-          csmFile: '$(System.ArtifactsDirectory)/arm/azuredeploy.json'
-          csmParametersFile: '$(System.ArtifactsDirectory)/arm/azuredeploy.parameters.json'
+          csmFile: '$(Pipeline.Workspace)/arm/azuredeploy.json'
+          csmParametersFile: '$(Pipeline.Workspace)/arm/azuredeploy.parameters.json'
           deploymentMode: 'Incremental'
       - task: AzureWebApp@1
         inputs:
           azureSubscription: 'Visual Studio Enterprise-abonnement – MPN(ff29f8c3-ba94-4171-b102-02a5256b1419)'
           appType: 'webApp'
           appName: 'RestApi17022023'
-          package: '$(System.ArtifactsDirectory)/RestAPI.zip'
+          package: '$(Pipeline.Workspace)/RestAPI.zip'
           deploymentMethod: 'auto'
