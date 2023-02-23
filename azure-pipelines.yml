@@ -77,7 +77,7 @@ stages:
       - task: AzureFunctionApp@1
         displayName: 'Deploy Sales Function' 
         inputs:
-          azureSubscription: 'Visual Studio Enterprise-abonnement – MPN(1)(ff29f8c3-ba94-4171-b102-02a5256b1419)'
+          azureSubscription: 'Visual Studio Enterprise-abonnement – MPN(ff29f8c3-ba94-4171-b102-02a5256b1419)'
           appType: 'functionApp'
           appName: 'SalesFunction15022023'
           package: '$(Pipeline.Workspace)/RetailServiceBusDemo.zip'
