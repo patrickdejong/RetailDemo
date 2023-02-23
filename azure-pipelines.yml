@@ -51,6 +51,7 @@ stages:
         displayName: 'Download artifact'
         inputs:
           artifact: drop
+      dependsOn: BuildAllProjects
     - job: DeployARM
       steps:
       - task: AzureResourceManagerTemplateDeployment@3
