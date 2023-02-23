@@ -72,5 +72,4 @@ stages:
             appName: 'RestApi17022023'
             package: '$(Pipeline.Workspace)/RestAPI.zip'
             deploymentMethod: 'auto'
-      dependsOn: DeployARM
-      condition: succeeded()
+        condition: succeeded()
