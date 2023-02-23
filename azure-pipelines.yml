@@ -82,3 +82,21 @@ stages:
           appName: 'SalesFunction15022023'
           package: '$(Pipeline.Workspace)/RetailServiceBusDemo.zip'
           deploymentMethod: 'zipDeploy'
+      
+      - task: AzureFunctionApp@1
+        displayName: 'Deploy Billing Function' 
+        inputs:
+          azureSubscription: 'Visual Studio Enterprise-abonnement – MPN(ff29f8c3-ba94-4171-b102-02a5256b1419)'
+          appType: 'functionApp'
+          appName: 'BillingFunction16022023'
+          package: '$(Pipeline.Workspace)/Billing.zip'
+          deploymentMethod: 'zipDeploy'
+      
+      - task: AzureFunctionApp@1
+        displayName: 'Deploy Shipping Function' 
+        inputs:
+          azureSubscription: 'Visual Studio Enterprise-abonnement – MPN(ff29f8c3-ba94-4171-b102-02a5256b1419)'
+          appType: 'functionApp'
+          appName: 'ShippingFunction16022023'
+          package: '$(Pipeline.Workspace)/Shipping.zip'
+          deploymentMethod: 'zipDeploy'
