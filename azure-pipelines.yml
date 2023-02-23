@@ -22,17 +22,20 @@ stages:
         projects: '**/*.csproj'
     
     - task: DotNetCoreCLI@2
+      displayName: 'dotnet publish'
       inputs:
         command: 'publish'
         publishWebProjects: false
         projects: '**/*.csproj'
         arguments: '--output $(Build.ArtifactStagingDirectory)'
     - task: CopyFiles@2
+      displayName: 'Kopiëren van ARM-template'
       inputs:
         SourceFolder: 'InfraAsCode'
         Contents: '*.json'
         TargetFolder: '$(Build.ArtifactStagingDirectory)/arm'
     - task: PublishBuildArtifacts@1
+      displayName: Publish artifact
       inputs:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)'
         ArtifactName: 'drop'
@@ -45,9 +48,11 @@ stages:
       - checkout: none
       # Download artifacts
       - task: DownloadPipelineArtifact@2
+        displayName: 'Download artifact'
         inputs:
           artifact: drop
       - task: AzureResourceManagerTemplateDeployment@3
+        displayName: 'Deploy ARM-template'
         inputs:
           deploymentScope: 'Resource Group'
           azureResourceManagerConnection: 'Visual Studio Enterprise-abonnement – MPN(ff29f8c3-ba94-4171-b102-02a5256b1419)'
@@ -60,9 +65,12 @@ stages:
           csmParametersFile: '$(Pipeline.Workspace)/arm/azuredeploy.parameters.json'
           deploymentMode: 'Incremental'
       - task: AzureWebApp@1
+        displayName: 'Deploy Rest Api'
         inputs:
           azureSubscription: 'Visual Studio Enterprise-abonnement – MPN(ff29f8c3-ba94-4171-b102-02a5256b1419)'
           appType: 'webApp'
           appName: 'RestApi17022023'
           package: '$(Pipeline.Workspace)/RestAPI.zip'
           deploymentMethod: 'auto'
+      dependsOn: AzureResourceManagerTemplateDeployment@3
+      condition: succeeded()
