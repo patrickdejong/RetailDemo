@@ -384,7 +384,7 @@
       "properties": {
         "filterType": "SqlFilter",
         "sqlFilter": {
-          "sqlExpression": "Type LIKE '%PlaceOrder%'",
+          "sqlExpression": "Type LIKE '%OrderPlaced%'",
           "requiresPreprocessing": false
         }
       },
