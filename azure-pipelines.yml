@@ -1,0 +1,102 @@
+trigger:
+- master
+
+pool:
+  vmImage: ubuntu-latest
+
+# Build projects
+stages:
+- stage: Build
+  jobs:
+  - job: BuildAllProjects
+    steps:
+    - task: DotNetCoreCLI@2
+      displayName: 'dotnet restore'
+      inputs:
+        command: 'restore'
+        projects: '**/*.csproj'
+    - task: DotNetCoreCLI@2
+      displayName: 'dotnet build'
+      inputs:
+        command: 'build'
+        projects: '**/*.csproj'
+    
+    - task: DotNetCoreCLI@2
+      displayName: 'dotnet publish'
+      inputs:
+        command: 'publish'
+        publishWebProjects: false
+        projects: '**/*.csproj'
+        arguments: '--output $(Build.ArtifactStagingDirectory)'
+    - task: CopyFiles@2
+      displayName: 'Kopiëren van ARM-template'
+      inputs:
+        SourceFolder: 'InfraAsCode'
+        Contents: '*.json'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)/arm'
+    - task: PublishBuildArtifacts@1
+      displayName: Publish artifact
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
+
+- stage: Development
+  jobs:
+    - job: DeploymentPreparation
+      steps:
+      - checkout: none
+      # Download artifacts
+      - task: DownloadPipelineArtifact@2
+        displayName: 'Download artifact'
+        inputs:
+          artifact: drop
+      - task: AzureResourceManagerTemplateDeployment@3
+        displayName: 'Deploy ARM-template'
+        inputs:
+          deploymentScope: 'Resource Group'
+          azureResourceManagerConnection: 'Visual Studio Enterprise-abonnement – MPN(ff29f8c3-ba94-4171-b102-02a5256b1419)'
+          subscriptionId: 'ff29f8c3-ba94-4171-b102-02a5256b1419'
+          action: 'Create Or Update Resource Group'
+          resourceGroupName: 'ArmResourceGroup'
+          location: 'West Europe'
+          templateLocation: 'Linked artifact'
+          csmFile: '$(Pipeline.Workspace)/arm/azuredeploy.json'
+          csmParametersFile: '$(Pipeline.Workspace)/arm/azuredeploy.parameters.json'
+          deploymentMode: 'Incremental'
+      - task: AzureWebApp@1
+        displayName: 'Deploy Rest Api'
+        inputs:
+            azureSubscription: 'Visual Studio Enterprise-abonnement – MPN(ff29f8c3-ba94-4171-b102-02a5256b1419)'
+            appType: 'webApp'
+            appName: 'RestApi17022023'
+            package: '$(Pipeline.Workspace)/RestAPI.zip'
+            deploymentMethod: 'auto'
+        condition: succeeded()
+        
+      - task: AzureFunctionApp@1
+        displayName: 'Deploy Sales Function' 
+        inputs:
+          azureSubscription: 'Visual Studio Enterprise-abonnement – MPN(ff29f8c3-ba94-4171-b102-02a5256b1419)'
+          appType: 'functionApp'
+          appName: 'SalesFunction15022023'
+          package: '$(Pipeline.Workspace)/RetailServiceBusDemo.zip'
+          deploymentMethod: 'zipDeploy'
+      
+      - task: AzureFunctionApp@1
+        displayName: 'Deploy Billing Function' 
+        inputs:
+          azureSubscription: 'Visual Studio Enterprise-abonnement – MPN(ff29f8c3-ba94-4171-b102-02a5256b1419)'
+          appType: 'functionApp'
+          appName: 'BillingFunction16022023'
+          package: '$(Pipeline.Workspace)/Billing.zip'
+          deploymentMethod: 'zipDeploy'
+      
+      - task: AzureFunctionApp@1
+        displayName: 'Deploy Shipping Function' 
+        inputs:
+          azureSubscription: 'Visual Studio Enterprise-abonnement – MPN(ff29f8c3-ba94-4171-b102-02a5256b1419)'
+          appType: 'functionApp'
+          appName: 'ShippingFunction16022023'
+          package: '$(Pipeline.Workspace)/Shipping.zip'
+          deploymentMethod: 'zipDeploy'
