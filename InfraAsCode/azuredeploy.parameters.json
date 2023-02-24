@@ -55,6 +55,12 @@
     },
     "env": {
       "value": "d"
+    },
+    "restApi": {
+      "value": "RestApi17022023"
+    },
+    "servicePlanForApi": {
+      "value": "RestApiPlan"
     }
   }
 }
