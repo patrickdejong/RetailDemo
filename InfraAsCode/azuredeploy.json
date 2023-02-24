@@ -50,6 +50,12 @@
         "description": "Name of the Billing Queue"
       }
     },
+    "orderBilledQueueName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Order Billed Queue"
+      }
+    },
     "shippingQueueName": {
       "type": "string",
       "metadata": {
@@ -223,6 +229,27 @@
     {
       "type": "Microsoft.ServiceBus/namespaces/queues",
       "apiVersion": "2017-04-01",
+      "name": "[format('{0}/{1}', parameters('serviceBusNamespaceName'), parameters('orderBilledQueueName'))]",
+      "properties": {
+        "lockDuration": "PT5M",
+        "maxSizeInMegabytes": 1024,
+        "requiresDuplicateDetection": false,
+        "requiresSession": false,
+        "defaultMessageTimeToLive": "P10675199DT2H48M5.4775807S",
+        "deadLetteringOnMessageExpiration": false,
+        "duplicateDetectionHistoryTimeWindow": "PT10M",
+        "maxDeliveryCount": 10,
+        "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S",
+        "enablePartitioning": false,
+        "enableExpress": false
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('serviceBusNamespaceName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/queues",
+      "apiVersion": "2017-04-01",
       "name": "[format('{0}/{1}', parameters('serviceBusNamespaceName'), parameters('shippingQueueName'))]",
       "properties": {
         "lockDuration": "PT5M",
@@ -330,7 +357,7 @@
         "maxDeliveryCount": 10,
         "enableBatchedOperations": false,
         "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S",
-        "forwardTo": "[parameters('shippingQueueName')]"
+        "forwardTo": "[parameters('orderBilledQueueName')]"
       }
     },
     {
