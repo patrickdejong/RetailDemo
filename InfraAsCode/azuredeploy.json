@@ -26,6 +26,12 @@
         "description": "Name of the Storage Account"
       }
     },
+    "containerName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the container in Storage Account"
+      }
+    },
     "topicName": {
       "type": "string",
       "metadata": {
@@ -134,6 +140,14 @@
         "name": "Standard_LRS"
       },
       "kind": "StorageV2"
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+      "apiVersion": "2019-06-01",
+      "name": "[parameters('containerName')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageName'))]"
+      ]
     },
     {
       "type": "Microsoft.ServiceBus/namespaces",
