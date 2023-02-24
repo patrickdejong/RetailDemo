@@ -23,10 +23,11 @@ namespace Shipping {
             var order = JsonConvert.DeserializeObject(Encoding.UTF8.GetString(message.Body));
 
             //Type ophalen
-            switch (message.ApplicationProperties.FirstOrDefault(m => m.Key == "Type").Value) { 
+            switch (message.ApplicationProperties.FirstOrDefault(m => m.Key == "Type").Value) {
                 case "OrderPlaced":
                     OrderPlaced orderPlaced = JsonConvert.DeserializeObject<OrderPlaced>(Encoding.UTF8.GetString(message.Body));
-                    OrderEntity orderEntity = new OrderEntity(orderPlaced.OrderId) {
+                    OrderEntity orderEntity = new OrderEntity(orderPlaced.OrderId)
+                    {
                         isOrderPlaced = true
                     };
                     return await UpdateOrderInStorage(orderEntity, orderPlaced.OrderId, Operation.OrderPlaced);
@@ -56,7 +57,7 @@ namespace Shipping {
                 TableQuery<OrderEntity> retrieveOperation = new TableQuery<OrderEntity>()
                     .Where(TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.Equal, orderId));
                 var orderList = await table.ExecuteQuerySegmentedAsync(retrieveOperation, null);
-                OrderEntity foundInTable = orderList.FirstOrDefault();//(o => o.RowKey == orderId);
+                OrderEntity foundInTable = orderList.FirstOrDefault();
 
                 // Add existing data to entity
                 if (foundInTable != null) {
@@ -71,21 +72,25 @@ namespace Shipping {
                         }
                     }
                 }
-                // Update table
-                await table.ExecuteAsync(TableOperation.InsertOrMerge(orderEntity));
+                if (foundInTable == null) {
+                    await table.ExecuteAsync(TableOperation.Insert(orderEntity));
+                } else {
+                    // Update table
+                    orderEntity.ETag = "*";
+                    await table.ExecuteAsync(TableOperation.Replace(orderEntity));
+                }
 
                 // If placed and billed, ship order!
-                if(orderEntity.isOrderPlaced && orderEntity.isOrderBilled) {
+                if (orderEntity.isOrderPlaced && orderEntity.isOrderBilled) {
                     ServiceBusMessage serviceBusMessage = new ServiceBusMessage(JsonConvert.SerializeObject(orderEntity));
                     serviceBusMessage.ApplicationProperties.Add("Type", "OrderShipped");
                     return serviceBusMessage;
                 }
                 return null;
-
             }
             catch (Exception e) {
                 Console.WriteLine($"\n!!! Something went wrong in table operation. ({e})!!!");
-                return null;
+                throw;
             }
         }
     }
