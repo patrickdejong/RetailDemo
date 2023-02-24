@@ -380,7 +380,7 @@
       "dependsOn": [
         "[parameters('shippingSubscription')]"
       ],
-      "name": "[format('{0}/{1}/{2}/{3}', parameters('serviceBusNamespaceName'), parameters('topicName'), parameters('shippingSubscription'), parameters('isPlaceOrder'))]",
+      "name": "[format('{0}/{1}/{2}/{3}', parameters('serviceBusNamespaceName'), parameters('topicName'), parameters('shippingSubscription'), parameters('isOrderPlaced'))]",
       "properties": {
         "filterType": "SqlFilter",
         "sqlFilter": {
