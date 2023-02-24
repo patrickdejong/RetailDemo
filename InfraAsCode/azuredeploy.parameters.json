@@ -43,6 +43,8 @@
     },
     "storageName": {
       "value": "storage13022023"
+    },"containerName": {
+      "value": "invoices"
     },
     "functionAppBilling": {
       "value": "BillingFunction16022023"
